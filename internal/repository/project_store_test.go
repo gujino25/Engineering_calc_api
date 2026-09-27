@@ -51,7 +51,7 @@ func TestList(t *testing.T) {
 	store.Create(t.Context(), project1)
 	store.Create(t.Context(), project2)
 
-	got := store.List(t.Context())
+	got, _ := store.List(t.Context())
 
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))

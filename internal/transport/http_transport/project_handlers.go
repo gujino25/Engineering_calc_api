@@ -1,20 +1,26 @@
 package httptransport
 
 import (
+	"context"
 	"encoding/json"
 	"enginer/internal/domain"
-	"enginer/internal/repository"
 	"errors"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-type ProjectHandlers struct {
-	projectStore *repository.ProjectStore
+type projectStore interface {
+	Create(ctx context.Context, project domain.Project) error
+	GetByID(ctx context.Context, id string) (domain.Project, error)
+	List(ctx context.Context) ([]domain.Project, error)
 }
 
-func NewProjectHandlers(store *repository.ProjectStore) *ProjectHandlers {
+type ProjectHandlers struct {
+	projectStore projectStore
+}
+
+func NewProjectHandlers(store projectStore) *ProjectHandlers {
 	return &ProjectHandlers{
 		projectStore: store,
 	}
@@ -37,10 +43,10 @@ func (p *ProjectHandlers) HandleCreateProject(w http.ResponseWriter, r *http.Req
 	ctx := r.Context()
 	if err := p.projectStore.Create(ctx, newProject); err != nil {
 		if errors.Is(err, domain.ErrProjectAlreadyExists) {
-			writeError(w, http.StatusConflict, "internal server error")
+			writeError(w, http.StatusConflict, err.Error())
 			return
 		}
-		writeError(w, http.StatusInternalServerError, "")
+		writeError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 	writeJSON(w, http.StatusCreated, toProjectResponse(newProject))
@@ -64,7 +70,11 @@ func (p *ProjectHandlers) HandleGetProject(w http.ResponseWriter, r *http.Reques
 
 func (p *ProjectHandlers) HandleListProjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	projects := p.projectStore.List(ctx)
+	projects, err := p.projectStore.List(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
 	res := make([]ProjectResponse, 0, len(projects))
 	for _, v := range projects {
 		res = append(res, toProjectResponse(v))
