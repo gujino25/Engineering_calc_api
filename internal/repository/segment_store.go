@@ -43,7 +43,7 @@ func (s *SegmentStore) GetByID(ctx context.Context, id string) (domain.Segment, 
 	return segments, nil
 }
 
-func (s *SegmentStore) ListBySystem(ctx context.Context, id string) []domain.Segment {
+func (s *SegmentStore) ListBySystem(ctx context.Context, id string) ([]domain.Segment, error) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	tmp := make([]domain.Segment, 0, len(s.segments))
@@ -61,7 +61,7 @@ func (s *SegmentStore) ListBySystem(ctx context.Context, id string) []domain.Seg
 		return cmp.Compare(a.ID, b.ID)
 	})
 
-	return tmp
+	return tmp, nil
 }
 
 func (s *SegmentStore) List(ctx context.Context) map[string]domain.Segment {

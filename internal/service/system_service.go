@@ -3,19 +3,23 @@ package service
 import (
 	"context"
 	"enginer/internal/domain"
-	"enginer/internal/repository"
 )
 
 type projectGetter interface {
 	GetByID(ctx context.Context, id string) (domain.Project, error)
 }
 
+type systemStore interface {
+	Create(ctx context.Context, system domain.System) error
+	ListByProject(ctx context.Context, projectID string) ([]domain.System, error)
+}
+
 type SystemService struct {
-	systemStore  *repository.SystemStore
+	systemStore  systemStore
 	projectStore projectGetter
 }
 
-func NewSystemService(systemStore *repository.SystemStore, projectStore projectGetter) *SystemService {
+func NewSystemService(systemStore systemStore, projectStore projectGetter) *SystemService {
 	return &SystemService{
 		systemStore:  systemStore,
 		projectStore: projectStore,
@@ -45,5 +49,5 @@ func (s *SystemService) ListByProject(ctx context.Context, projectID string) ([]
 		return nil, err
 	}
 
-	return s.systemStore.ListByProject(ctx, projectID), nil
+	return s.systemStore.ListByProject(ctx, projectID)
 }

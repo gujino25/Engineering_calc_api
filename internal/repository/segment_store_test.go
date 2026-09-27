@@ -113,8 +113,10 @@ func TestSegment_ListBySystem(t *testing.T) {
 	store.Create(t.Context(), segment2)
 	store.Create(t.Context(), segment3)
 
-	got := store.ListBySystem(t.Context(), "system-2")
-
+	got, err := store.ListBySystem(t.Context(), "system-2")
+	if err != nil {
+		t.Fatalf("неожиданная ошибка: %v", err)
+	}
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))
 	}

@@ -3,19 +3,23 @@ package service
 import (
 	"context"
 	"enginer/internal/domain"
-	"enginer/internal/repository"
 )
 
 type systemGetter interface {
 	GetByID(ctx context.Context, id string) (domain.System, error)
 }
 
+type segmentStore interface {
+	Create(ctx context.Context, segment domain.Segment) error
+	ListBySystem(ctx context.Context, systemID string) ([]domain.Segment, error)
+}
+
 type SegmentService struct {
-	segmentStore *repository.SegmentStore
+	segmentStore segmentStore
 	systemStore  systemGetter
 }
 
-func NewSegmentService(segmentStore *repository.SegmentStore, systemStore systemGetter) *SegmentService {
+func NewSegmentService(segmentStore segmentStore, systemStore systemGetter) *SegmentService {
 	return &SegmentService{
 		segmentStore: segmentStore,
 		systemStore:  systemStore,
@@ -42,5 +46,5 @@ func (s *SegmentService) ListBySystem(ctx context.Context, systemID string) ([]d
 	if _, err := s.systemStore.GetByID(ctx, systemID); err != nil {
 		return nil, err
 	}
-	return s.segmentStore.ListBySystem(ctx, systemID), nil
+	return s.segmentStore.ListBySystem(ctx, systemID)
 }
