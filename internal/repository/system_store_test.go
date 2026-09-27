@@ -90,7 +90,10 @@ func TestSystemStore_ListByProject(t *testing.T) {
 	store.Create(t.Context(), system2)
 	store.Create(t.Context(), system3)
 
-	got := store.ListByProject(t.Context(), "project-2")
+	got, err := store.ListByProject(t.Context(), "project-2")
+	if err != nil {
+		t.Fatalf("неожиданная ошибка: %v", err)
+	}
 
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))

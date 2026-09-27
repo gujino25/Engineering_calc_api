@@ -82,7 +82,7 @@ func TestSegmentService_CreateSegment(t *testing.T) {
 			t.Fatalf("Name = %v, ожидалось = %v", segment.Name, "После вру 1")
 		}
 
-		got, err := svc.segmentStore.GetByID(t.Context(), segment.ID)
+		got, err := svc.segmentStore.(*repository.SegmentStore).GetByID(t.Context(), segment.ID)
 		if err != nil {
 			t.Fatalf("Сегмент не найден в хранилище %v", err)
 		}
@@ -151,7 +151,7 @@ func TestSegmentService_ListBySystem(t *testing.T) {
 			t.Errorf("сегмент %s не найдена в результате", segment2.ID)
 		}
 		if check[otherSegment.ID] {
-			t.Errorf("сегмент %s из другого проекта не должна быть в результате", otherSegment.ID)
+			t.Errorf("сегмент %s из другой системы не должен быть в результате", otherSegment.ID)
 		}
 	})
 }

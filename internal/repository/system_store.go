@@ -46,7 +46,7 @@ func (s *SystemStore) GetByID(ctx context.Context, id string) (domain.System, er
 	return system, nil
 }
 
-func (s *SystemStore) ListByProject(ctx context.Context, id string) []domain.System {
+func (s *SystemStore) ListByProject(ctx context.Context, id string) ([]domain.System, error) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	tmp := make([]domain.System, 0, len(s.systems))
@@ -64,7 +64,7 @@ func (s *SystemStore) ListByProject(ctx context.Context, id string) []domain.Sys
 		return cmp.Compare(a.ID, b.ID)
 	})
 
-	return tmp
+	return tmp, nil
 }
 
 func (s *SystemStore) List(ctx context.Context) map[string]domain.System {

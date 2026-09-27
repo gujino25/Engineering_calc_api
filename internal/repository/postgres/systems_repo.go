@@ -72,14 +72,17 @@ func (r *SystemsRepo) List(ctx context.Context) ([]domain.System, error) {
 	rows, err := r.pool.Query(ctx, query)
 
 	if err != nil {
-		return nil, fmt.Errorf("get all systems %w:", err)
+		return nil, fmt.Errorf("get all systems: %w", err)
 	}
+	defer rows.Close()
 	var systems []domain.System
 	for rows.Next() {
+		var medium string
 		var s domain.System
-		if err := rows.Scan(&s.ID, &s.ProjectID, &s.Name, &s.Medium, &s.Purpose, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.ProjectID, &s.Name, &medium, &s.Purpose, &s.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scan systems: %w", err)
 		}
+		s.Medium = domain.Medium(medium)
 		systems = append(systems, s)
 	}
 	return systems, rows.Err()
@@ -97,7 +100,7 @@ func (r *SystemsRepo) ListByProject(ctx context.Context, project_id string) ([]d
 		var medium string
 		var s domain.System
 		if err := rows.Scan(&s.ID, &s.ProjectID, &s.Name, &medium, &s.Purpose, &s.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan projects: %w", err)
+			return nil, fmt.Errorf("scan systems: %w", err)
 		}
 		s.Medium = domain.Medium(medium)
 		systems = append(systems, s)

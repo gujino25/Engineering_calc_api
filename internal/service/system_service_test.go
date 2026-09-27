@@ -59,7 +59,7 @@ func TestSystemService_CreateSystem(t *testing.T) {
 			t.Errorf("Name = %v, ожидалось %v", system.Name, "Система 1")
 		}
 
-		got, err := svc.systemStore.GetByID(t.Context(), system.ID)
+		got, err := svc.systemStore.(*repository.SystemStore).GetByID(t.Context(), system.ID)
 		if err != nil {
 			t.Fatalf("система не найдена в хранилище: %v", err)
 		}
@@ -121,7 +121,7 @@ func TestSystemService_ListByProject(t *testing.T) {
 		if !check[system2.ID] {
 			t.Errorf("система %s не найдена в результате", system2.ID)
 		}
-		if check[otherSystem.ProjectID] {
+		if check[otherSystem.ID] {
 			t.Errorf("система %s из другого проекта не должна быть в результате", otherSystem.ID)
 		}
 	})
