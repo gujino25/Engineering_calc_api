@@ -20,7 +20,7 @@ func TestSystemService_CreateSystem(t *testing.T) {
 	t.Run("проект не найден", func(t *testing.T) {
 		svc, _ := newTestSystemService()
 
-		_, err := svc.CreateSystem("no-such-project", "Система 1", domain.MediumAir, "офис")
+		_, err := svc.CreateSystem(t.Context(), "no-such-project", "Система 1", domain.MediumAir, "офис")
 		if !errors.Is(err, domain.ErrProjectNotFound) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrProjectNotFound)
 		}
@@ -30,11 +30,11 @@ func TestSystemService_CreateSystem(t *testing.T) {
 		svc, projectStore := newTestSystemService()
 
 		project := domain.NewProject("Проект 1", "описание")
-		if err := projectStore.Create(project); err != nil {
+		if err := projectStore.Create(t.Context(), project); err != nil {
 			t.Fatalf("не удалось создать проект: %v", err)
 		}
 
-		_, err := svc.CreateSystem(project.ID, "Система 1", domain.Medium("газ"), "офис")
+		_, err := svc.CreateSystem(t.Context(), project.ID, "Система 1", domain.Medium("газ"), "офис")
 		if !errors.Is(err, domain.ErrMediumInvalid) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrMediumInvalid)
 		}
@@ -44,11 +44,11 @@ func TestSystemService_CreateSystem(t *testing.T) {
 		svc, projectStore := newTestSystemService()
 
 		project := domain.NewProject("Проект 1", "описание")
-		if err := projectStore.Create(project); err != nil {
+		if err := projectStore.Create(t.Context(), project); err != nil {
 			t.Fatalf("не удалось создать проект: %v", err)
 		}
 
-		system, err := svc.CreateSystem(project.ID, "Система 1", domain.MediumAir, "офис")
+		system, err := svc.CreateSystem(t.Context(), project.ID, "Система 1", domain.MediumAir, "офис")
 		if err != nil {
 			t.Fatalf("не удалось создать систему: %v", err)
 		}
@@ -59,7 +59,7 @@ func TestSystemService_CreateSystem(t *testing.T) {
 			t.Errorf("Name = %v, ожидалось %v", system.Name, "Система 1")
 		}
 
-		got, err := svc.systemStore.GetByID(system.ID)
+		got, err := svc.systemStore.GetByID(t.Context(), system.ID)
 		if err != nil {
 			t.Fatalf("система не найдена в хранилище: %v", err)
 		}
@@ -73,7 +73,7 @@ func TestSystemService_ListByProject(t *testing.T) {
 	t.Run("проект не найден", func(t *testing.T) {
 		svc, _ := newTestSystemService()
 
-		_, err := svc.ListByProject("no-such-project")
+		_, err := svc.ListByProject(t.Context(), "no-such-project")
 		if !errors.Is(err, domain.ErrProjectNotFound) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrProjectNotFound)
 		}
@@ -84,27 +84,27 @@ func TestSystemService_ListByProject(t *testing.T) {
 
 		project1 := domain.NewProject("Проект 1", "описание")
 		project2 := domain.NewProject("Проект 2", "описание")
-		if err := projectStore.Create(project1); err != nil {
+		if err := projectStore.Create(t.Context(), project1); err != nil {
 			t.Fatalf("не удалось создать проект 1: %v", err)
 		}
-		if err := projectStore.Create(project2); err != nil {
+		if err := projectStore.Create(t.Context(), project2); err != nil {
 			t.Fatalf("не удалось создать проект 2: %v", err)
 		}
 
-		system1, err := svc.CreateSystem(project1.ID, "Система 1", domain.MediumAir, "офис")
+		system1, err := svc.CreateSystem(t.Context(), project1.ID, "Система 1", domain.MediumAir, "офис")
 		if err != nil {
 			t.Fatalf("не удалось создать систему 1: %v", err)
 		}
-		system2, err := svc.CreateSystem(project1.ID, "Система 2", domain.MediumWater, "склад")
+		system2, err := svc.CreateSystem(t.Context(), project1.ID, "Система 2", domain.MediumWater, "склад")
 		if err != nil {
 			t.Fatalf("не удалось создать систему 2: %v", err)
 		}
-		otherSystem, err := svc.CreateSystem(project2.ID, "Чужая система", domain.MediumAir, "офис")
+		otherSystem, err := svc.CreateSystem(t.Context(), project2.ID, "Чужая система", domain.MediumAir, "офис")
 		if err != nil {
 			t.Fatalf("не удалось создать чужую систему: %v", err)
 		}
 
-		got, err := svc.ListByProject(project1.ID)
+		got, err := svc.ListByProject(t.Context(), project1.ID)
 		if err != nil {
 			t.Fatalf("неожиданная ошибка: %v", err)
 		}

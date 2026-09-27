@@ -25,7 +25,7 @@ func TestHandleCreateSegment(t *testing.T) {
 	handlers, projectStore, systemStore, _ := newTestSegmentHandlers()
 
 	project := domain.NewProject("тест", "проект для сегмента")
-	if err := projectStore.Create(project); err != nil {
+	if err := projectStore.Create(t.Context(), project); err != nil {
 		t.Fatalf("не удалось создать проект: %v", err)
 	}
 
@@ -33,7 +33,7 @@ func TestHandleCreateSegment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("не удалось создать систему: %v", err)
 	}
-	if err := systemStore.Create(system); err != nil {
+	if err := systemStore.Create(t.Context(), system); err != nil {
 		t.Fatalf("не удалось положить систему в хранилище: %v", err)
 	}
 
@@ -124,7 +124,7 @@ func TestHandleListBySystem(t *testing.T) {
 		handlers, projectStore, systemStore, segmentStore := newTestSegmentHandlers()
 
 		project := domain.NewProject("тест", "проект для списка сегментов")
-		if err := projectStore.Create(project); err != nil {
+		if err := projectStore.Create(t.Context(), project); err != nil {
 			t.Fatalf("не удалось создать проект: %v", err)
 		}
 
@@ -132,7 +132,7 @@ func TestHandleListBySystem(t *testing.T) {
 		if err != nil {
 			t.Fatalf("не удалось создать систему: %v", err)
 		}
-		if err := systemStore.Create(system); err != nil {
+		if err := systemStore.Create(t.Context(), system); err != nil {
 			t.Fatalf("не удалось положить систему в хранилище: %v", err)
 		}
 
@@ -140,7 +140,7 @@ func TestHandleListBySystem(t *testing.T) {
 		if err != nil {
 			t.Fatalf("не удалось создать сегмент: %v", err)
 		}
-		if err := segmentStore.Create(segment); err != nil {
+		if err := segmentStore.Create(t.Context(), segment); err != nil {
 			t.Fatalf("не удалось положить сегмент в хранилище: %v", err)
 		}
 

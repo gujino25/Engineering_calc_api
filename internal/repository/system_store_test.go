@@ -14,10 +14,10 @@ func TestSystemStore_CreateAndGetByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("не удалось создать систему %v:", err)
 	}
-	if err := store.Create(system); err != nil {
+	if err := store.Create(t.Context(), system); err != nil {
 		t.Fatalf("не удалось создать в сторе: %v", err)
 	}
-	got, err := store.GetByID(system.ID)
+	got, err := store.GetByID(t.Context(), system.ID)
 	if err != nil {
 		t.Fatalf("не удалось получить систему %v:", err)
 	}
@@ -38,7 +38,7 @@ func TestSystemStore_GetByID_NotFound(t *testing.T) {
 
 	store := NewSystemStore()
 
-	_, err := store.GetByID("asdad")
+	_, err := store.GetByID(t.Context(), "asdad")
 	if !errors.Is(err, domain.ErrSystemNotFound) {
 		t.Fatalf("err = %v, ожидалась ErrSystemNotFound:", err)
 	}
@@ -51,10 +51,10 @@ func TestSystemStore_List(t *testing.T) {
 	system1, _ := domain.NewSystem("project-1", "П1", "air", "Дача приток")
 	system2, _ := domain.NewSystem("project-2", "В1", "air", "Дача вытяжка")
 
-	store.Create(system1)
-	store.Create(system2)
+	store.Create(t.Context(), system1)
+	store.Create(t.Context(), system2)
 
-	got := store.List()
+	got := store.List(t.Context())
 
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))
@@ -86,11 +86,11 @@ func TestSystemStore_ListByProject(t *testing.T) {
 		t.Fatalf("Не удалось создать систему3 %v", err)
 	}
 
-	store.Create(system1)
-	store.Create(system2)
-	store.Create(system3)
+	store.Create(t.Context(), system1)
+	store.Create(t.Context(), system2)
+	store.Create(t.Context(), system3)
 
-	got := store.ListByProject("project-2")
+	got := store.ListByProject(t.Context(), "project-2")
 
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))

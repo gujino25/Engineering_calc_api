@@ -1,12 +1,13 @@
 package service
 
 import (
+	"context"
 	"enginer/internal/domain"
 	"enginer/internal/repository"
 )
 
 type systemGetter interface {
-	GetByID(id string) (domain.System, error)
+	GetByID(ctx context.Context, id string) (domain.System, error)
 }
 
 type SegmentService struct {
@@ -21,8 +22,8 @@ func NewSegmentService(segmentStore *repository.SegmentStore, systemStore system
 	}
 }
 
-func (s *SegmentService) CreateSegment(systemID, name string, shape domain.Shape, rect *domain.RectGeometry, round *domain.RoundGeometry, length float64) (domain.Segment, error) {
-	if _, err := s.systemStore.GetByID(systemID); err != nil {
+func (s *SegmentService) CreateSegment(ctx context.Context, systemID, name string, shape domain.Shape, rect *domain.RectGeometry, round *domain.RoundGeometry, length float64) (domain.Segment, error) {
+	if _, err := s.systemStore.GetByID(ctx, systemID); err != nil {
 		return domain.Segment{}, err
 	}
 	segment, err := domain.NewSegment(systemID, name, shape, rect, round, length)
@@ -30,16 +31,16 @@ func (s *SegmentService) CreateSegment(systemID, name string, shape domain.Shape
 		return domain.Segment{}, err
 	}
 
-	if err := s.segmentStore.Create(segment); err != nil {
+	if err := s.segmentStore.Create(ctx, segment); err != nil {
 		return domain.Segment{}, err
 	}
 
 	return segment, nil
 }
 
-func (s *SegmentService) ListBySystem(systemID string) ([]domain.Segment, error) {
-	if _, err := s.systemStore.GetByID(systemID); err != nil {
+func (s *SegmentService) ListBySystem(ctx context.Context, systemID string) ([]domain.Segment, error) {
+	if _, err := s.systemStore.GetByID(ctx, systemID); err != nil {
 		return nil, err
 	}
-	return s.segmentStore.ListBySystem(systemID), nil
+	return s.segmentStore.ListBySystem(ctx, systemID), nil
 }

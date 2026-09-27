@@ -11,13 +11,13 @@ func TestProjectCreateAndGetByID(t *testing.T) {
 
 	project := domain.NewProject("Дача", "Вентиляция на даче")
 
-	err := store.Create(project)
+	err := store.Create(t.Context(), project)
 
 	if err != nil {
 		t.Fatalf("Не удалось создать в сторе %v", err)
 	}
 
-	got, err := store.GetByID(project.ID)
+	got, err := store.GetByID(t.Context(), project.ID)
 
 	if err != nil {
 		t.Fatalf("Не удалось получить систему %v", err)
@@ -35,7 +35,7 @@ func TestProjectCreateAndGetByID(t *testing.T) {
 func TestGotByID_NotFound(t *testing.T) {
 	store := NewProjectStore()
 
-	_, err := store.GetByID("adadad")
+	_, err := store.GetByID(t.Context(), "adadad")
 
 	if !errors.Is(err, domain.ErrProjectNotFound) {
 		t.Fatalf("err = %v, ожидалась ErrProjectNotFound:", err)
@@ -48,10 +48,10 @@ func TestList(t *testing.T) {
 	project1 := domain.NewProject("Дача", "Вентиляция на даче")
 	project2 := domain.NewProject("Дача", "Водоснабжение на даче")
 
-	store.Create(project1)
-	store.Create(project2)
+	store.Create(t.Context(), project1)
+	store.Create(t.Context(), project2)
 
-	got := store.List()
+	got := store.List(t.Context())
 
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))

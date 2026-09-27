@@ -2,6 +2,7 @@ package repository
 
 import (
 	"cmp"
+	"context"
 	"enginer/internal/domain"
 	"slices"
 	"sync"
@@ -18,7 +19,7 @@ func NewProjectStore() *ProjectStore {
 	}
 }
 
-func (p *ProjectStore) Create(project domain.Project) error {
+func (p *ProjectStore) Create(ctx context.Context, project domain.Project) error {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 
@@ -30,7 +31,7 @@ func (p *ProjectStore) Create(project domain.Project) error {
 	return nil
 }
 
-func (p *ProjectStore) GetByID(id string) (domain.Project, error) {
+func (p *ProjectStore) GetByID(ctx context.Context, id string) (domain.Project, error) {
 	p.mtx.RLock()
 	defer p.mtx.RUnlock()
 
@@ -42,7 +43,7 @@ func (p *ProjectStore) GetByID(id string) (domain.Project, error) {
 	return project, nil
 }
 
-func (p *ProjectStore) List() []domain.Project {
+func (p *ProjectStore) List(ctx context.Context) []domain.Project {
 	p.mtx.RLock()
 	defer p.mtx.RUnlock()
 

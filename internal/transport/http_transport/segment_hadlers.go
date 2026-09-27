@@ -45,7 +45,9 @@ func (s *SegmentHandlers) HandleCreateSegment(w http.ResponseWriter, r *http.Req
 			Diameter: segmentDTO.Round.Diameter,
 		}
 	}
+	ctx := r.Context()
 	newSegment, err := s.segmentService.CreateSegment(
+		ctx,
 		systemID,
 		segmentDTO.Name,
 		domain.Shape(segmentDTO.Shape),
@@ -74,7 +76,8 @@ func (s *SegmentHandlers) HandleCreateSegment(w http.ResponseWriter, r *http.Req
 
 func (s *SegmentHandlers) HandleListBySystem(w http.ResponseWriter, r *http.Request) {
 	systemID := mux.Vars(r)["system_id"]
-	segments, err := s.segmentService.ListBySystem(systemID)
+	ctx := r.Context()
+	segments, err := s.segmentService.ListBySystem(ctx, systemID)
 
 	if err != nil {
 		if errors.Is(err, domain.ErrSystemNotFound) {
