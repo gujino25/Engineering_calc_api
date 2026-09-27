@@ -138,13 +138,17 @@ func TestSegmentService_ListBySystem(t *testing.T) {
 		if len(got) != 2 {
 			t.Fatalf("len(got) = %d, ожидалось 2", len(got))
 		}
-		if _, ok := got[segment1.ID]; !ok {
+		check := make(map[string]bool, len(got))
+		for _, p := range got {
+			check[p.ID] = true
+		}
+		if !check[segment1.ID] {
 			t.Errorf("сегмент %s не найдена в результате", segment1.ID)
 		}
-		if _, ok := got[segment2.ID]; !ok {
+		if !check[segment2.ID] {
 			t.Errorf("сегмент %s не найдена в результате", segment2.ID)
 		}
-		if _, ok := got[otherSegment.ID]; ok {
+		if check[otherSegment.ID] {
 			t.Errorf("сегмент %s из другого проекта не должна быть в результате", otherSegment.ID)
 		}
 	})

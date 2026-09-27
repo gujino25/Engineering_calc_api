@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"cmp"
 	"enginer/internal/domain"
 	"maps"
+	"slices"
 	"sync"
 )
 
@@ -40,15 +42,23 @@ func (s *SegmentStore) GetByID(id string) (domain.Segment, error) {
 	return segments, nil
 }
 
-func (s *SegmentStore) ListBySystem(id string) map[string]domain.Segment {
+func (s *SegmentStore) ListBySystem(id string) []domain.Segment {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	tmp := make(map[string]domain.Segment, len(s.segments))
-	for k, v := range s.segments {
+	tmp := make([]domain.Segment, 0, len(s.segments))
+
+	for _, v := range s.segments {
 		if v.SystemID == id {
-			tmp[k] = v
+			tmp = append(tmp, v)
 		}
 	}
+
+	slices.SortFunc(tmp, func(a, b domain.Segment) int {
+		if c := a.CreatedAt.Compare(b.CreatedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(a.ID, b.ID)
+	})
 
 	return tmp
 }

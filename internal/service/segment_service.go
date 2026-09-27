@@ -37,7 +37,7 @@ func (s *SegmentService) CreateSegment(systemID, name string, shape domain.Shape
 	return segment, nil
 }
 
-func (s *SegmentService) ListBySystem(systemID string) (map[string]domain.Segment, error) {
+func (s *SegmentService) ListBySystem(systemID string) ([]domain.Segment, error) {
 	if _, err := s.systemStore.GetByID(systemID); err != nil {
 		return nil, err
 	}
