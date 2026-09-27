@@ -43,7 +43,7 @@ func (p *ProjectStore) GetByID(ctx context.Context, id string) (domain.Project, 
 	return project, nil
 }
 
-func (p *ProjectStore) List(ctx context.Context) []domain.Project {
+func (p *ProjectStore) List(ctx context.Context) ([]domain.Project, error) {
 	p.mtx.RLock()
 	defer p.mtx.RUnlock()
 
@@ -57,5 +57,5 @@ func (p *ProjectStore) List(ctx context.Context) []domain.Project {
 		}
 		return cmp.Compare(a.ID, b.ID)
 	})
-	return tmp
+	return tmp, nil
 }

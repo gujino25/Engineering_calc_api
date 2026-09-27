@@ -1,0 +1,6 @@
+.env
+enginer
+enginer.exe
+*.exe
+.idea/
+.vscode/
