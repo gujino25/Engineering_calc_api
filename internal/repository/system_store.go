@@ -2,6 +2,7 @@ package repository
 
 import (
 	"cmp"
+	"context"
 	"enginer/internal/domain"
 	"maps"
 	"slices"
@@ -21,7 +22,7 @@ func NewSystemStore() *SystemStore {
 
 }
 
-func (s *SystemStore) Create(system domain.System) error {
+func (s *SystemStore) Create(ctx context.Context, system domain.System) error {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -33,7 +34,7 @@ func (s *SystemStore) Create(system domain.System) error {
 	return nil
 }
 
-func (s *SystemStore) GetByID(id string) (domain.System, error) {
+func (s *SystemStore) GetByID(ctx context.Context, id string) (domain.System, error) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	system, ok := s.systems[id]
@@ -45,7 +46,7 @@ func (s *SystemStore) GetByID(id string) (domain.System, error) {
 	return system, nil
 }
 
-func (s *SystemStore) ListByProject(id string) []domain.System {
+func (s *SystemStore) ListByProject(ctx context.Context, id string) []domain.System {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	tmp := make([]domain.System, 0, len(s.systems))
@@ -66,7 +67,7 @@ func (s *SystemStore) ListByProject(id string) []domain.System {
 	return tmp
 }
 
-func (s *SystemStore) List() map[string]domain.System {
+func (s *SystemStore) List(ctx context.Context) map[string]domain.System {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	tmp := make(map[string]domain.System, len(s.systems))

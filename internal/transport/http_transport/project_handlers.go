@@ -34,7 +34,8 @@ func (p *ProjectHandlers) HandleCreateProject(w http.ResponseWriter, r *http.Req
 		return
 	}
 	newProject := domain.NewProject(projectDTO.Name, projectDTO.Description)
-	if err := p.projectStore.Create(newProject); err != nil {
+	ctx := r.Context()
+	if err := p.projectStore.Create(ctx, newProject); err != nil {
 		if errors.Is(err, domain.ErrProjectAlreadyExists) {
 			writeError(w, http.StatusConflict, "internal server error")
 			return
@@ -47,7 +48,8 @@ func (p *ProjectHandlers) HandleCreateProject(w http.ResponseWriter, r *http.Req
 
 func (p *ProjectHandlers) HandleGetProject(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	project, err := p.projectStore.GetByID(id)
+	ctx := r.Context()
+	project, err := p.projectStore.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrProjectNotFound) {
 			writeError(w, http.StatusNotFound, err.Error())
@@ -61,7 +63,8 @@ func (p *ProjectHandlers) HandleGetProject(w http.ResponseWriter, r *http.Reques
 }
 
 func (p *ProjectHandlers) HandleListProjects(w http.ResponseWriter, r *http.Request) {
-	projects := p.projectStore.List()
+	ctx := r.Context()
+	projects := p.projectStore.List(ctx)
 	res := make([]ProjectResponse, 0, len(projects))
 	for _, v := range projects {
 		res = append(res, toProjectResponse(v))

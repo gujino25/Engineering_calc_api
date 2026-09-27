@@ -2,6 +2,7 @@ package repository
 
 import (
 	"cmp"
+	"context"
 	"enginer/internal/domain"
 	"maps"
 	"slices"
@@ -20,7 +21,7 @@ func NewSegmentStore() *SegmentStore {
 	}
 }
 
-func (s *SegmentStore) Create(segment domain.Segment) error {
+func (s *SegmentStore) Create(ctx context.Context, segment domain.Segment) error {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -32,7 +33,7 @@ func (s *SegmentStore) Create(segment domain.Segment) error {
 	return nil
 }
 
-func (s *SegmentStore) GetByID(id string) (domain.Segment, error) {
+func (s *SegmentStore) GetByID(ctx context.Context, id string) (domain.Segment, error) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	segments, ok := s.segments[id]
@@ -42,7 +43,7 @@ func (s *SegmentStore) GetByID(id string) (domain.Segment, error) {
 	return segments, nil
 }
 
-func (s *SegmentStore) ListBySystem(id string) []domain.Segment {
+func (s *SegmentStore) ListBySystem(ctx context.Context, id string) []domain.Segment {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	tmp := make([]domain.Segment, 0, len(s.segments))
@@ -63,7 +64,7 @@ func (s *SegmentStore) ListBySystem(id string) []domain.Segment {
 	return tmp
 }
 
-func (s *SegmentStore) List() map[string]domain.Segment {
+func (s *SegmentStore) List(ctx context.Context) map[string]domain.Segment {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	tmp := make(map[string]domain.Segment, len(s.segments))

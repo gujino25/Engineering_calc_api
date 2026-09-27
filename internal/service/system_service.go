@@ -1,12 +1,13 @@
 package service
 
 import (
+	"context"
 	"enginer/internal/domain"
 	"enginer/internal/repository"
 )
 
 type projectGetter interface {
-	GetByID(id string) (domain.Project, error)
+	GetByID(ctx context.Context, id string) (domain.Project, error)
 }
 
 type SystemService struct {
@@ -21,8 +22,8 @@ func NewSystemService(systemStore *repository.SystemStore, projectStore projectG
 	}
 }
 
-func (s *SystemService) CreateSystem(projectID, name string, medium domain.Medium, purpose string) (domain.System, error) {
-	if _, err := s.projectStore.GetByID(projectID); err != nil {
+func (s *SystemService) CreateSystem(ctx context.Context, projectID, name string, medium domain.Medium, purpose string) (domain.System, error) {
+	if _, err := s.projectStore.GetByID(ctx, projectID); err != nil {
 		return domain.System{}, err
 	}
 
@@ -31,18 +32,18 @@ func (s *SystemService) CreateSystem(projectID, name string, medium domain.Mediu
 		return domain.System{}, err
 	}
 
-	if err := s.systemStore.Create(system); err != nil {
+	if err := s.systemStore.Create(ctx, system); err != nil {
 		return domain.System{}, err
 	}
 
 	return system, nil
 }
 
-func (s *SystemService) ListByProject(projectID string) ([]domain.System, error) {
+func (s *SystemService) ListByProject(ctx context.Context, projectID string) ([]domain.System, error) {
 
-	if _, err := s.projectStore.GetByID(projectID); err != nil {
+	if _, err := s.projectStore.GetByID(ctx, projectID); err != nil {
 		return nil, err
 	}
 
-	return s.systemStore.ListByProject(projectID), nil
+	return s.systemStore.ListByProject(ctx, projectID), nil
 }

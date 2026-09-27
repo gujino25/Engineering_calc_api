@@ -57,7 +57,7 @@ func TestHandleGetProject(t *testing.T) {
 	store := repository.NewProjectStore()
 	handlers := NewProjectHandlers(store)
 	project := domain.NewProject("тест", "тест по айди")
-	store.Create(project)
+	store.Create(t.Context(), project)
 	tests := []struct {
 		name       string
 		id         string
@@ -117,10 +117,10 @@ func TestHandleListProjects(t *testing.T) {
 
 		project1 := domain.NewProject("test", "project1 test")
 		project2 := domain.NewProject("project2", "project2 test")
-		if err := store.Create(project1); err != nil {
+		if err := store.Create(t.Context(), project1); err != nil {
 			t.Fatalf("не удалось создать проект1: %v", err)
 		}
-		if err := store.Create(project2); err != nil {
+		if err := store.Create(t.Context(), project2); err != nil {
 			t.Fatalf("не удалось создать проект2: %v", err)
 		}
 

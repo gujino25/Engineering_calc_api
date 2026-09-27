@@ -39,11 +39,11 @@ func TestSegmentStore_CreateAndGetByID(t *testing.T) {
 			if err != nil {
 				t.Fatalf("не удалось создать сегмент %v", err)
 			}
-			if err := store.Create(segment); err != nil {
+			if err := store.Create(t.Context(), segment); err != nil {
 				t.Fatalf("не удалось создать харанилище %v", err)
 			}
 
-			got, err := store.GetByID(segment.ID)
+			got, err := store.GetByID(t.Context(), segment.ID)
 			if err != nil {
 				t.Fatalf("не удалось найти сегмент: %v", err)
 			}
@@ -64,7 +64,7 @@ func TestSegmentStore_CreateAndGetByID(t *testing.T) {
 func TestSegmentStore_GetByID_NotFound(t *testing.T) {
 	segments := NewSegmentStore()
 
-	_, err := segments.GetByID("aaaa")
+	_, err := segments.GetByID(t.Context(), "aaaa")
 
 	if !errors.Is(err, domain.ErrSegmentNotFound) {
 		t.Fatalf("err = %v, ожидалась ErrSegmentNotFound", err)
@@ -76,10 +76,10 @@ func TestSegmentStore_List(t *testing.T) {
 
 	segment1, _ := domain.NewSegment("system-1", "После вру 1", "rect", &domain.RectGeometry{Width: 200, Height: 300}, nil, 3.5)
 	segment2, _ := domain.NewSegment("syetem-2", "После вру 2", "rect", &domain.RectGeometry{Width: 100, Height: 100}, nil, 2.5)
-	store.Create(segment1)
-	store.Create(segment2)
+	store.Create(t.Context(), segment1)
+	store.Create(t.Context(), segment2)
 
-	got := store.List()
+	got := store.List(t.Context())
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))
 	}
@@ -109,11 +109,11 @@ func TestSegment_ListBySystem(t *testing.T) {
 		t.Fatalf("Не удалось создать сегмент3 %v", err)
 	}
 
-	store.Create(segment1)
-	store.Create(segment2)
-	store.Create(segment3)
+	store.Create(t.Context(), segment1)
+	store.Create(t.Context(), segment2)
+	store.Create(t.Context(), segment3)
 
-	got := store.ListBySystem("system-2")
+	got := store.ListBySystem(t.Context(), "system-2")
 
 	if len(got) != 2 {
 		t.Fatalf("len(got) = %d, ожидалось 2", len(got))

@@ -32,7 +32,9 @@ func (s *SystemHandlers) HandleCreateSystem(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	projectID := mux.Vars(r)["project_id"]
+	ctx := r.Context()
 	newSystem, err := s.systemService.CreateSystem(
+		ctx,
 		projectID,
 		systemDTO.Name,
 		domain.Medium(systemDTO.Medium),
@@ -56,7 +58,8 @@ func (s *SystemHandlers) HandleCreateSystem(w http.ResponseWriter, r *http.Reque
 
 func (s *SystemHandlers) HandleListByProject(w http.ResponseWriter, r *http.Request) {
 	projectID := mux.Vars(r)["project_id"]
-	systems, err := s.systemService.ListByProject(projectID)
+	ctx := r.Context()
+	systems, err := s.systemService.ListByProject(ctx, projectID)
 
 	if err != nil {
 		if errors.Is(err, domain.ErrProjectNotFound) {

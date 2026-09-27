@@ -24,7 +24,7 @@ func TestHandleCreateSystem(t *testing.T) {
 	handlers, projectStore, _ := newTestSystemHandlers()
 
 	project := domain.NewProject("тест", "проект для системы")
-	if err := projectStore.Create(project); err != nil {
+	if err := projectStore.Create(t.Context(), project); err != nil {
 		t.Fatalf("не удалось создать проект: %v", err)
 	}
 
@@ -97,14 +97,14 @@ func TestHandleListByProject(t *testing.T) {
 		handlers, projectStore, systemStore := newTestSystemHandlers()
 		project := domain.NewProject("валидный тест", "система с проектами")
 
-		if err := projectStore.Create(project); err != nil {
+		if err := projectStore.Create(t.Context(), project); err != nil {
 			t.Fatalf("не удалось создать проект %v", err)
 		}
 		system, err := domain.NewSystem(project.ID, "система 1", "air", "просто так")
 		if err != nil {
 			t.Fatalf("не удалось создать систему %v", err)
 		}
-		if err := systemStore.Create(system); err != nil {
+		if err := systemStore.Create(t.Context(), system); err != nil {
 			t.Fatalf("не удалоь положить систему в хранилище %v", err)
 		}
 		req := httptest.NewRequest(http.MethodGet, "/projects/"+project.ID+"/systems", nil)
