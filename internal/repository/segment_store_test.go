@@ -34,6 +34,7 @@ func TestSegmentStore_CreateAndGetByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			store := NewSegmentStore()
 			segment, err := domain.NewSegment(tt.id, tt.name, tt.shape, tt.rect, tt.round, tt.length)
 			if err != nil {

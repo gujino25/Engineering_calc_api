@@ -5,13 +5,22 @@ import (
 	"enginer/internal/repository"
 	"errors"
 	"testing"
+
+	"github.com/alicebob/miniredis/v2"
+	"github.com/redis/go-redis/v9"
 )
 
-func newTestSegmentService() (*SegmentService, *repository.SystemStore) {
+func newTestSegmentService(t *testing.T) (*SegmentService, *repository.SystemStore) {
+	t.Helper()
+
+	mr := miniredis.RunT(t)
+	cache := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { cache.Close() })
 	systemstore := repository.NewSystemStore()
 	svc := &SegmentService{
 		segmentStore: repository.NewSegmentStore(),
 		systemStore:  systemstore,
+		cache:        cache,
 	}
 	return svc, systemstore
 }
@@ -19,7 +28,7 @@ func newTestSegmentService() (*SegmentService, *repository.SystemStore) {
 func newTestSegmentServiceWithSystem(t *testing.T) (*SegmentService, domain.System) {
 	t.Helper()
 
-	svc, systemStore := newTestSegmentService()
+	svc, systemStore := newTestSegmentService(t)
 	system, err := domain.NewSystem("project-1", "Вытяжка", "air", "Вытяжка на дачу")
 	if err != nil {
 		t.Fatalf("не удалось создать систему: %v", err)
@@ -32,7 +41,7 @@ func newTestSegmentServiceWithSystem(t *testing.T) (*SegmentService, domain.Syst
 
 func TestSegmentService_CreateSegment(t *testing.T) {
 	t.Run("система не найдена", func(t *testing.T) {
-		svc, _ := newTestSegmentService()
+		svc, _ := newTestSegmentService(t)
 		_, err := svc.CreateSegment(t.Context(), "system-1", "От вру", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 5.8)
 		if !errors.Is(err, domain.ErrSystemNotFound) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrSystemNotFound)
@@ -95,7 +104,7 @@ func TestSegmentService_CreateSegment(t *testing.T) {
 func TestSegmentService_ListBySystem(t *testing.T) {
 	t.Run("Нет систем", func(t *testing.T) {
 		ctx := t.Context()
-		svc, _ := newTestSegmentService()
+		svc, _ := newTestSegmentService(t)
 		_, err := svc.ListBySystem(ctx, "no system at all")
 		if !errors.Is(err, domain.ErrSystemNotFound) {
 			t.Fatalf("Err = %v, ожидалось %v", err, domain.ErrSystemNotFound)
@@ -104,7 +113,7 @@ func TestSegmentService_ListBySystem(t *testing.T) {
 	})
 	t.Run("Валидный тест по системе", func(t *testing.T) {
 		ctx := t.Context()
-		svc, systemStore := newTestSegmentService()
+		svc, systemStore := newTestSegmentService(t)
 		system1, err := domain.NewSystem("project-1", "Вытяжка", "air", "Вытяжка с кухни")
 		if err != nil {
 			t.Fatalf("Не удалось создать систему %v", err)
