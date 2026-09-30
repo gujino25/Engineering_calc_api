@@ -10,19 +10,26 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gorilla/mux"
+	"github.com/redis/go-redis/v9"
 )
 
-func newTestSegmentHandlers() (*SegmentHandlers, *repository.ProjectStore, *repository.SystemStore, *repository.SegmentStore) {
+func newTestSegmentHandlers(t *testing.T) (*SegmentHandlers, *repository.ProjectStore, *repository.SystemStore, *repository.SegmentStore) {
+	t.Helper()
+
+	mr := miniredis.RunT(t)
+	cache := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { cache.Close() })
 	projectStore := repository.NewProjectStore()
 	systemStore := repository.NewSystemStore()
 	segmentStore := repository.NewSegmentStore()
-	segmentService := service.NewSegmentService(segmentStore, systemStore)
+	segmentService := service.NewSegmentService(segmentStore, systemStore, cache)
 	return NewSegmentHandlers(segmentService), projectStore, systemStore, segmentStore
 }
 
 func TestHandleCreateSegment(t *testing.T) {
-	handlers, projectStore, systemStore, _ := newTestSegmentHandlers()
+	handlers, projectStore, systemStore, _ := newTestSegmentHandlers(t)
 
 	project := domain.NewProject("тест", "проект для сегмента")
 	if err := projectStore.Create(t.Context(), project); err != nil {
@@ -109,7 +116,7 @@ func TestHandleCreateSegment(t *testing.T) {
 
 func TestHandleListBySystem(t *testing.T) {
 	t.Run("система не найдена", func(t *testing.T) {
-		handlers, _, _, _ := newTestSegmentHandlers()
+		handlers, _, _, _ := newTestSegmentHandlers(t)
 		req := httptest.NewRequest(http.MethodGet, "/systems/no_id/segments", nil)
 		req = mux.SetURLVars(req, map[string]string{"system_id": "невалидный_айдишник"})
 		rec := httptest.NewRecorder()
@@ -121,7 +128,7 @@ func TestHandleListBySystem(t *testing.T) {
 	})
 
 	t.Run("валидный список", func(t *testing.T) {
-		handlers, projectStore, systemStore, segmentStore := newTestSegmentHandlers()
+		handlers, projectStore, systemStore, segmentStore := newTestSegmentHandlers(t)
 
 		project := domain.NewProject("тест", "проект для списка сегментов")
 		if err := projectStore.Create(t.Context(), project); err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"enginer/internal/repository/postgres"
+	redisstore "enginer/internal/repository/redis_store"
 	"enginer/internal/service"
 	httptransport "enginer/internal/transport/http_transport"
 	"fmt"
@@ -28,12 +29,21 @@ func main() {
 		log.Fatal("failed to connect to db: ", err)
 	}
 	defer pool.Close()
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == "" {
+		log.Fatalf("REDIS_ADDR is required")
+	}
+	client, err := redisstore.NewClient(ctx, addr)
+	if err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+	defer client.Close()
 
 	projectRepo := postgres.NewProjectRepo(pool)
 	systemRepo := postgres.NewSystemRepo(pool)
 	segmentRepo := postgres.NewSegmentRepo(pool)
 
-	segmentSvc := service.NewSegmentService(segmentRepo, systemRepo)
+	segmentSvc := service.NewSegmentService(segmentRepo, systemRepo, client)
 	systemSvc := service.NewSystemService(systemRepo, projectRepo)
 	projectHandlers := httptransport.NewProjectHandlers(projectRepo)
 	systemHadlers := httptransport.NewSystemHandlers(systemSvc)
