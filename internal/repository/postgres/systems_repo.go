@@ -42,7 +42,7 @@ func (r *SystemsRepo) Create(ctx context.Context, system domain.System) error {
 }
 
 func (r *SystemsRepo) GetByID(ctx context.Context, id string) (domain.System, error) {
-	const query = `SELECT id, project_id, name, medium, purpose, created_at FROM systems WHERE id = $1`
+	const query = `SELECT id, project_id, name, medium, purpose, created_at FROM systems WHERE id = $1 `
 	var system domain.System
 
 	var medium string
