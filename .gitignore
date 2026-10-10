@@ -4,3 +4,4 @@ enginer.exe
 *.exe
 .idea/
 .vscode/
+.claude/settings.local.json*
