@@ -1,8 +1,10 @@
 package httptransport
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -24,7 +26,7 @@ func NewHTTPServer(
 	}
 }
 
-func (s *HTTPServer) StartServer() error {
+func (s *HTTPServer) StartServer(ctx context.Context, addr string) error {
 	router := mux.NewRouter()
 	router.Path("/projects").Methods("POST").HandlerFunc(s.projectHandlers.HandleCreateProject)
 	router.Path("/projects/{id}").Methods("GET").HandlerFunc(s.projectHandlers.HandleGetProject)
@@ -33,7 +35,21 @@ func (s *HTTPServer) StartServer() error {
 	router.Path("/projects/{project_id}/systems").Methods("GET").HandlerFunc(s.systemHandlers.HandleListByProject)
 	router.Path("/systems/{system_id}/segments").Methods("POST").HandlerFunc(s.segmentHandlers.HandleCreateSegment)
 	router.Path("/systems/{system_id}/segments").Methods("GET").HandlerFunc(s.segmentHandlers.HandleListBySystem)
-	if err := http.ListenAndServe(":9091", router); err != nil {
+
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		srv.Shutdown(shutdownCtx)
+	}()
+
+	if err := srv.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			return nil
 		}

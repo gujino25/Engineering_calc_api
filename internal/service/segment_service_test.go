@@ -42,7 +42,7 @@ func newTestSegmentServiceWithSystem(t *testing.T) (*SegmentService, domain.Syst
 func TestSegmentService_CreateSegment(t *testing.T) {
 	t.Run("система не найдена", func(t *testing.T) {
 		svc, _ := newTestSegmentService(t)
-		_, err := svc.CreateSegment(t.Context(), "system-1", "От вру", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 5.8)
+		_, err := svc.CreateSegment(t.Context(), "system-1", "От вру", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 5.8, 800)
 		if !errors.Is(err, domain.ErrSystemNotFound) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrSystemNotFound)
 		}
@@ -50,14 +50,14 @@ func TestSegmentService_CreateSegment(t *testing.T) {
 	})
 	t.Run("Форма и геометрия не совпали", func(t *testing.T) {
 		svc, system := newTestSegmentServiceWithSystem(t)
-		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "round", &domain.RectGeometry{Width: 200, Height: 150}, nil, 5.8)
+		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "round", &domain.RectGeometry{Width: 200, Height: 150}, nil, 5.8, 800)
 		if !errors.Is(err, domain.ErrGeometryInvalid) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrGeometryInvalid)
 		}
 	})
 	t.Run("Невалидная геометрия", func(t *testing.T) {
 		svc, system := newTestSegmentServiceWithSystem(t)
-		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "rect", &domain.RectGeometry{Width: 0, Height: 150}, nil, 5.8)
+		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "rect", &domain.RectGeometry{Width: 0, Height: 150}, nil, 5.8, 800)
 		if !errors.Is(err, domain.ErrGeometryInvalid) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrGeometryInvalid)
 		}
@@ -65,7 +65,7 @@ func TestSegmentService_CreateSegment(t *testing.T) {
 
 	t.Run("Невалидная форма", func(t *testing.T) {
 		svc, system := newTestSegmentServiceWithSystem(t)
-		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "жопа", &domain.RectGeometry{Width: 250, Height: 150}, nil, 5.8)
+		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "жопа", &domain.RectGeometry{Width: 250, Height: 150}, nil, 5.8, 800)
 		if !errors.Is(err, domain.ErrShapeInvalid) {
 			t.Fatalf("err = %v, ожидалось %v", err, domain.ErrShapeInvalid)
 		}
@@ -73,14 +73,21 @@ func TestSegmentService_CreateSegment(t *testing.T) {
 	})
 	t.Run("Нулевая длина", func(t *testing.T) {
 		svc, system := newTestSegmentServiceWithSystem(t)
-		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 0)
+		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 0, 800)
 		if !errors.Is(err, domain.ErrLengthInvalid) {
 			t.Fatalf(" err = %v, ожидалось %v", err, domain.ErrLengthInvalid)
 		}
 	})
+	t.Run("Нулевой расход", func(t *testing.T) {
+		svc, system := newTestSegmentServiceWithSystem(t)
+		_, err := svc.CreateSegment(t.Context(), system.ID, "От вру", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 5.8, 0)
+		if !errors.Is(err, domain.ErrFlowRateInvalid) {
+			t.Fatalf(" err = %v, ожидалось %v", err, domain.ErrFlowRateInvalid)
+		}
+	})
 	t.Run("валидное создание сегмента", func(t *testing.T) {
 		svc, system := newTestSegmentServiceWithSystem(t)
-		segment, err := svc.CreateSegment(t.Context(), system.ID, "После вру 1", "round", nil, &domain.RoundGeometry{Diameter: 250}, 5.8)
+		segment, err := svc.CreateSegment(t.Context(), system.ID, "После вру 1", "round", nil, &domain.RoundGeometry{Diameter: 250}, 5.8, 800)
 		if err != nil {
 			t.Fatalf("Не удалось создать сегмент %v", err)
 		}
@@ -89,6 +96,9 @@ func TestSegmentService_CreateSegment(t *testing.T) {
 		}
 		if segment.Name != "После вру 1" {
 			t.Fatalf("Name = %v, ожидалось = %v", segment.Name, "После вру 1")
+		}
+		if segment.FlowRate != 800 {
+			t.Fatalf("FlowRate = %v, ожидалось = %v", segment.FlowRate, 800)
 		}
 
 		got, err := svc.segmentStore.(*repository.SegmentStore).GetByID(t.Context(), segment.ID)
@@ -130,15 +140,15 @@ func TestSegmentService_ListBySystem(t *testing.T) {
 			t.Fatalf("Не удалось создать хранилище систем  %v", err)
 		}
 
-		segment1, err := svc.CreateSegment(ctx, system1.ID, "От вру 1", "round", nil, &domain.RoundGeometry{Diameter: 250}, 1.2)
+		segment1, err := svc.CreateSegment(ctx, system1.ID, "От вру 1", "round", nil, &domain.RoundGeometry{Diameter: 250}, 1.2, 800)
 		if err != nil {
 			t.Fatalf("Не удалось создать сегмент %v", err)
 		}
-		segment2, err := svc.CreateSegment(ctx, system1.ID, "От вру 1", "round", nil, &domain.RoundGeometry{Diameter: 160}, 1.5)
+		segment2, err := svc.CreateSegment(ctx, system1.ID, "От вру 1", "round", nil, &domain.RoundGeometry{Diameter: 160}, 1.5, 800)
 		if err != nil {
 			t.Fatalf("Не удалось создать сегмент %v", err)
 		}
-		otherSegment, err := svc.CreateSegment(ctx, system2.ID, "От вру 2", "round", nil, &domain.RoundGeometry{Diameter: 125}, 1.7)
+		otherSegment, err := svc.CreateSegment(ctx, system2.ID, "От вру 2", "round", nil, &domain.RoundGeometry{Diameter: 125}, 1.7, 800)
 		if err != nil {
 			t.Fatalf("Не удалось создать сегмент %v", err)
 		}

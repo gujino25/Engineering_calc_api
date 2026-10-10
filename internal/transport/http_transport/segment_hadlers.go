@@ -53,7 +53,8 @@ func (s *SegmentHandlers) HandleCreateSegment(w http.ResponseWriter, r *http.Req
 		domain.Shape(segmentDTO.Shape),
 		rect,
 		round,
-		segmentDTO.Length)
+		segmentDTO.Length,
+		segmentDTO.FlowRate)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrSystemNotFound):
@@ -62,6 +63,7 @@ func (s *SegmentHandlers) HandleCreateSegment(w http.ResponseWriter, r *http.Req
 			writeError(w, http.StatusConflict, err.Error())
 		case errors.Is(err, domain.ErrGeometryInvalid),
 			errors.Is(err, domain.ErrLengthInvalid),
+			errors.Is(err, domain.ErrFlowRateInvalid),
 			errors.Is(err, domain.ErrShapeInvalid):
 			writeError(w, http.StatusBadRequest, err.Error())
 		default:

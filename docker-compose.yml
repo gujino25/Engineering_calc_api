@@ -9,12 +9,39 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d enginer"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
 
   redis:
     image: redis:7
     ports:
       - "6379:6379"
 
+  migrate:
+    image: migrate/migrate:v4.18.1
+    volumes:
+      - ./migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://postgres:pass@postgres:5432/enginer?sslmode=disable", "up"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:pass@postgres:5432/enginer?sslmode=disable
+      REDIS_ADDR: redis:6379
+      HTTP_ADDR: ":9091"
+    ports:
+      - "9091:9091"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+
 volumes:
- pgdata:
+  pgdata:
