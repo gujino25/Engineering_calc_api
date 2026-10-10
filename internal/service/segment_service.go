@@ -35,13 +35,13 @@ func NewSegmentService(segmentStore segmentStore, systemStore systemGetter, cahe
 	}
 }
 
-func (s *SegmentService) CreateSegment(ctx context.Context, systemID, name string, shape domain.Shape, rect *domain.RectGeometry, round *domain.RoundGeometry, length float64) (domain.Segment, error) {
+func (s *SegmentService) CreateSegment(ctx context.Context, systemID, name string, shape domain.Shape, rect *domain.RectGeometry, round *domain.RoundGeometry, length, flowRate float64) (domain.Segment, error) {
 	if _, err := s.systemStore.GetByID(ctx, systemID); err != nil {
 		return domain.Segment{}, err
 	}
 	key := fmt.Sprintf("segments:system:%s", systemID)
 
-	segment, err := domain.NewSegment(systemID, name, shape, rect, round, length)
+	segment, err := domain.NewSegment(systemID, name, shape, rect, round, length, flowRate)
 	if err != nil {
 		return domain.Segment{}, err
 	}

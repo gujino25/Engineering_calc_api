@@ -53,37 +53,49 @@ func TestHandleCreateSegment(t *testing.T) {
 		{
 			name:       "валидное создание прямоугольного воздуховода",
 			systemID:   system.ID,
-			body:       `{"name":"воздуховод 1","shape":"rect","rect":{"width":10,"height":20},"length":5}`,
+			body:       `{"name":"воздуховод 1","shape":"rect","rect":{"width":10,"height":20},"length":5,"flow_rate":1000}`,
 			wantStatus: http.StatusCreated,
 		},
 		{
 			name:       "валидное создание круглой трубы",
 			systemID:   system.ID,
-			body:       `{"name":"труба 1","shape":"round","round":{"diameter":15},"length":5}`,
+			body:       `{"name":"труба 1","shape":"round","round":{"diameter":15},"length":5,"flow_rate":1000}`,
 			wantStatus: http.StatusCreated,
 		},
 		{
 			name:       "пустое имя",
 			systemID:   system.ID,
-			body:       `{"name":"","shape":"round","round":{"diameter":15},"length":5}`,
+			body:       `{"name":"","shape":"round","round":{"diameter":15},"length":5,"flow_rate":1000}`,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "невалидная форма",
 			systemID:   system.ID,
-			body:       `{"name":"труба","shape":"треугольник","length":5}`,
+			body:       `{"name":"труба","shape":"треугольник","length":5,"flow_rate":1000}`,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "невалидная геометрия",
 			systemID:   system.ID,
-			body:       `{"name":"труба","shape":"rect","rect":{"width":0,"height":20},"length":5}`,
+			body:       `{"name":"труба","shape":"rect","rect":{"width":0,"height":20},"length":5,"flow_rate":1000}`,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "невалидная длина",
 			systemID:   system.ID,
-			body:       `{"name":"труба","shape":"round","round":{"diameter":15},"length":0}`,
+			body:       `{"name":"труба","shape":"round","round":{"diameter":15},"length":0,"flow_rate":1000}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "нулевой расход",
+			systemID:   system.ID,
+			body:       `{"name":"труба","shape":"round","round":{"diameter":15},"length":5,"flow_rate":0}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "отрицательный расход",
+			systemID:   system.ID,
+			body:       `{"name":"труба","shape":"round","round":{"diameter":15},"length":5,"flow_rate":-10}`,
 			wantStatus: http.StatusBadRequest,
 		},
 		{
@@ -95,7 +107,7 @@ func TestHandleCreateSegment(t *testing.T) {
 		{
 			name:       "несуществующая система",
 			systemID:   "нет-такой-системы",
-			body:       `{"name":"труба","shape":"round","round":{"diameter":15},"length":5}`,
+			body:       `{"name":"труба","shape":"round","round":{"diameter":15},"length":5,"flow_rate":1000}`,
 			wantStatus: http.StatusNotFound,
 		},
 	}
@@ -143,7 +155,7 @@ func TestHandleListBySystem(t *testing.T) {
 			t.Fatalf("не удалось положить систему в хранилище: %v", err)
 		}
 
-		segment, err := domain.NewSegment(system.ID, "воздуховод 1", domain.ShapeRect, &domain.RectGeometry{Width: 10, Height: 20}, nil, 5)
+		segment, err := domain.NewSegment(system.ID, "воздуховод 1", domain.ShapeRect, &domain.RectGeometry{Width: 400, Height: 200}, nil, 5, 1000)
 		if err != nil {
 			t.Fatalf("не удалось создать сегмент: %v", err)
 		}
@@ -169,6 +181,15 @@ func TestHandleListBySystem(t *testing.T) {
 		}
 		if res[0].ID != segment.ID {
 			t.Errorf("ID = %v, ожидался %v", res[0].ID, segment.ID)
+		}
+		if res[0].FlowRate != 1000 {
+			t.Errorf("FlowRate = %v, ожидался %v", res[0].FlowRate, 1000)
+		}
+		if res[0].Area != 0.08 {
+			t.Errorf("Area = %v, ожидалась %v", res[0].Area, 0.08)
+		}
+		if res[0].Velocity != 3.472 {
+			t.Errorf("Velocity = %v, ожидалась %v", res[0].Velocity, 3.472)
 		}
 	})
 }

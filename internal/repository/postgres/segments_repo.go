@@ -22,7 +22,7 @@ func NewSegmentRepo(pool *pgxpool.Pool) *SegmentRepo {
 }
 
 func (s *SegmentRepo) Create(ctx context.Context, segment domain.Segment) error {
-	const query = `INSERT INTO segments (id, system_id, name, shape, width, height, diameter, length, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`
+	const query = `INSERT INTO segments (id, system_id, name, shape, width, height, diameter, length, flow_rate, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`
 
 	var width, height, diameter *int
 	if segment.Rect != nil {
@@ -43,6 +43,7 @@ func (s *SegmentRepo) Create(ctx context.Context, segment domain.Segment) error 
 		height,
 		diameter,
 		segment.Length,
+		segment.FlowRate,
 		segment.CreatedAt)
 	if err != nil {
 		var pgrErr *pgconn.PgError
@@ -60,7 +61,7 @@ func (s *SegmentRepo) Create(ctx context.Context, segment domain.Segment) error 
 }
 
 func (s *SegmentRepo) GetByID(ctx context.Context, id string) (domain.Segment, error) {
-	const query = `SELECT id, system_id, name, shape, width, height, diameter, length, created_at FROM segments WHERE id = $1`
+	const query = `SELECT id, system_id, name, shape, width, height, diameter, length, flow_rate, created_at FROM segments WHERE id = $1`
 
 	segment, err := scanSegment(s.pool.QueryRow(ctx, query, id))
 	if err != nil {
@@ -73,7 +74,7 @@ func (s *SegmentRepo) GetByID(ctx context.Context, id string) (domain.Segment, e
 }
 
 func (s *SegmentRepo) List(ctx context.Context) ([]domain.Segment, error) {
-	const query = `SELECT id, system_id, name, shape, width, height, diameter, length, created_at FROM segments ORDER BY created_at, id`
+	const query = `SELECT id, system_id, name, shape, width, height, diameter, length, flow_rate, created_at FROM segments ORDER BY created_at, id`
 
 	rows, err := s.pool.Query(ctx, query)
 	if err != nil {
@@ -93,7 +94,7 @@ func (s *SegmentRepo) List(ctx context.Context) ([]domain.Segment, error) {
 }
 
 func (s *SegmentRepo) ListBySystem(ctx context.Context, systemID string) ([]domain.Segment, error) {
-	const query = `SELECT id, system_id, name, shape, width, height, diameter, length, created_at FROM segments WHERE system_id = $1 ORDER BY created_at, id`
+	const query = `SELECT id, system_id, name, shape, width, height, diameter, length, flow_rate, created_at FROM segments WHERE system_id = $1 ORDER BY created_at, id`
 
 	rows, err := s.pool.Query(ctx, query, systemID)
 	if err != nil {
@@ -126,6 +127,7 @@ func scanSegment(row pgx.Row) (domain.Segment, error) {
 		&height,
 		&diameter,
 		&segment.Length,
+		&segment.FlowRate,
 		&segment.CreatedAt,
 	)
 	if err != nil {

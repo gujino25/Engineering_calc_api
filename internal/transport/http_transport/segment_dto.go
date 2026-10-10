@@ -3,6 +3,7 @@ package httptransport
 import (
 	"enginer/internal/domain"
 	"errors"
+	"math"
 )
 
 type RectGeometryDTO struct {
@@ -15,11 +16,12 @@ type RoundGeometryDTO struct {
 }
 
 type CreateSegmentDTO struct {
-	Name   string            `json:"name"`
-	Shape  string            `json:"shape"`
-	Rect   *RectGeometryDTO  `json:"rect"`
-	Round  *RoundGeometryDTO `json:"round"`
-	Length float64           `json:"length"`
+	Name     string            `json:"name"`
+	Shape    string            `json:"shape"`
+	Rect     *RectGeometryDTO  `json:"rect"`
+	Round    *RoundGeometryDTO `json:"round"`
+	Length   float64           `json:"length"`
+	FlowRate float64           `json:"flow_rate"`
 }
 
 func (s CreateSegmentDTO) Validate() error {
@@ -38,7 +40,14 @@ type SegmentResponse struct {
 	Rect      *RectGeometryDTO  `json:"rect"`
 	Round     *RoundGeometryDTO `json:"round"`
 	Length    float64           `json:"length"`
+	FlowRate  float64           `json:"flow_rate"`
+	Area      float64           `json:"area"`
+	Velocity  float64           `json:"velocity"`
 	CreatedAt string            `json:"created_at"`
+}
+
+func round3(v float64) float64 {
+	return math.Round(v*1000) / 1000
 }
 
 func toSegmentResponse(d domain.Segment) SegmentResponse {
@@ -58,6 +67,9 @@ func toSegmentResponse(d domain.Segment) SegmentResponse {
 		}
 	}
 
+	area, _ := d.Area()
+	velocity, _ := d.Velocity()
+
 	return SegmentResponse{
 		ID:        d.ID,
 		SystemID:  d.SystemID,
@@ -66,6 +78,9 @@ func toSegmentResponse(d domain.Segment) SegmentResponse {
 		Rect:      rect,
 		Round:     round,
 		Length:    d.Length,
+		FlowRate:  d.FlowRate,
+		Area:      round3(area),
+		Velocity:  round3(velocity),
 		CreatedAt: d.CreatedAt.Format("02.01.2006"),
 	}
 }

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -)",
+      "Bash(go build *)",
+      "Bash(go vet *)",
+      "Bash(cat > *)",
+      "Bash(docker exec *)",
+      "Bash(docker compose *)",
+      "Bash(xargs sed -i 's/ErrFloatRateInvalid/ErrFlowRateInvalid/g')",
+      "Bash(sed -i -e 's/\"float rate is invalid\"/\"flow rate is invalid\"/' -e 's/\"lenght is invalid\"/\"length is invalid\"/' -e 's/\"segemnt not found\"/\"segment not found\"/' -e 's/\"medium is invailid\"/\"medium is invalid\"/' -e 's/\"Area is invalid\"/\"area is invalid\"/' -e 's/\"project already exist\"/\"project already exists\"/' -e 's/\"system already exist\"/\"system already exists\"/' -e 's/\"segment already exist\"/\"segment already exists\"/' internal/domain/errors.go)",
+      "Bash(gofmt -l .)",
+      "Bash(go test *)",
+      "Bash(gofmt -w internal/domain/errors.go)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ],
+    "additionalDirectories": [
+      "/home/gujino/Engineering_calc_api"
+    ]
+  }
+}

@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/joho/godotenv"
 )
@@ -23,7 +25,8 @@ func main() {
 	if dsn == "" {
 		log.Fatal("DATABASE_URL is required")
 	}
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 	pool, err := postgres.NewDB(ctx, dsn)
 	if err != nil {
 		log.Fatal("failed to connect to db: ", err)
@@ -50,7 +53,12 @@ func main() {
 	segmentHandlers := httptransport.NewSegmentHandlers(segmentSvc)
 	httpServer := httptransport.NewHTTPServer(projectHandlers, systemHadlers, segmentHandlers)
 
-	if err := httpServer.StartServer(); err != nil {
+	httpAddr := os.Getenv("HTTP_ADDR")
+	if httpAddr == "" {
+		httpAddr = ":9091"
+	}
+	log.Printf("http server listening on %s", httpAddr)
+	if err := httpServer.StartServer(ctx, httpAddr); err != nil {
 		fmt.Println("failed to start http server", err)
 	}
 }

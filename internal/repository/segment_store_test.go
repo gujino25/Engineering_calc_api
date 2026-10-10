@@ -36,7 +36,7 @@ func TestSegmentStore_CreateAndGetByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			store := NewSegmentStore()
-			segment, err := domain.NewSegment(tt.id, tt.name, tt.shape, tt.rect, tt.round, tt.length)
+			segment, err := domain.NewSegment(tt.id, tt.name, tt.shape, tt.rect, tt.round, tt.length, 500)
 			if err != nil {
 				t.Fatalf("не удалось создать сегмент %v", err)
 			}
@@ -75,8 +75,8 @@ func TestSegmentStore_GetByID_NotFound(t *testing.T) {
 func TestSegmentStore_List(t *testing.T) {
 	store := NewSegmentStore()
 
-	segment1, _ := domain.NewSegment("system-1", "После вру 1", "rect", &domain.RectGeometry{Width: 200, Height: 300}, nil, 3.5)
-	segment2, _ := domain.NewSegment("syetem-2", "После вру 2", "rect", &domain.RectGeometry{Width: 100, Height: 100}, nil, 2.5)
+	segment1, _ := domain.NewSegment("system-1", "После вру 1", "rect", &domain.RectGeometry{Width: 200, Height: 300}, nil, 3.5, 500)
+	segment2, _ := domain.NewSegment("syetem-2", "После вру 2", "rect", &domain.RectGeometry{Width: 100, Height: 100}, nil, 2.5, 500)
 	store.Create(t.Context(), segment1)
 	store.Create(t.Context(), segment2)
 
@@ -97,15 +97,15 @@ func TestSegmentStore_List(t *testing.T) {
 func TestSegment_ListBySystem(t *testing.T) {
 	store := NewSegmentStore()
 
-	segment1, err := domain.NewSegment("system-1", "После вру 1", "rect", &domain.RectGeometry{Width: 200, Height: 300}, nil, 3.5)
+	segment1, err := domain.NewSegment("system-1", "После вру 1", "rect", &domain.RectGeometry{Width: 200, Height: 300}, nil, 3.5, 500)
 	if err != nil {
 		t.Fatalf("Не удалось создать сегмент1 %v", err)
 	}
-	segment2, err := domain.NewSegment("system-2", "После вру 1", "rect", &domain.RectGeometry{Width: 300, Height: 200}, nil, 0.5)
+	segment2, err := domain.NewSegment("system-2", "После вру 1", "rect", &domain.RectGeometry{Width: 300, Height: 200}, nil, 0.5, 500)
 	if err != nil {
 		t.Fatalf("Не удалось создать сегмент2 %v", err)
 	}
-	segment3, err := domain.NewSegment("system-2", "После вру 2", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 1.5)
+	segment3, err := domain.NewSegment("system-2", "После вру 2", "rect", &domain.RectGeometry{Width: 200, Height: 150}, nil, 1.5, 500)
 	if err != nil {
 		t.Fatalf("Не удалось создать сегмент3 %v", err)
 	}
